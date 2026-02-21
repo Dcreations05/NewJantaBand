@@ -75,7 +75,7 @@ function handleInquirySubmit(e) {
         `Please provide more details.`
     );
 
-    const phoneNumber = "919876543210"; 
+    const phoneNumber = "918982069314"; 
     window.open(`https://wa.me/${phoneNumber}?text=${text}`, '_blank');
     
     // Show success message (simple alert for static version)
@@ -110,7 +110,7 @@ function handleBookingSubmit(e) {
         `Please confirm availability.`
     );
     
-    const phoneNumber = "919876543210";
+    const phoneNumber = "918982069314";
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
     
      // Show success message
