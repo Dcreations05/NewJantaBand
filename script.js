@@ -113,7 +113,29 @@ function handleBookingSubmit(e) {
     const phoneNumber = "918982069314";
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
     
-     // Show success message
-     alert('Booking Request Sent! We will confirm availability shortly.');
-     e.target.reset();
+    // Show Modal
+    const modal = document.getElementById('booking-modal');
+    const modalContent = document.getElementById('booking-modal-content');
+    
+    modal.classList.remove('hidden');
+    // Small delay to allow display:block to apply before opacity transition
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+        lucide.createIcons(); // Re-init icons for the modal
+    }, 10);
+
+    e.target.reset();
+}
+
+function closeBookingModal() {
+    const modal = document.getElementById('booking-modal');
+    const modalContent = document.getElementById('booking-modal-content');
+    
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300); // Wait for transition
 }

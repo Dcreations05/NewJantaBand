@@ -616,6 +616,24 @@
         </div>
     </footer>
 
+    <!-- Booking Confirmation Modal -->
+    <div id="booking-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="booking-modal-content">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="check" class="w-8 h-8 text-green-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">Request Sent!</h3>
+                <p class="text-slate-600 mb-6">
+                    Thank you for your booking request. We have received your details on WhatsApp and will confirm your booking shortly.
+                </p>
+                <button onclick="closeBookingModal()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20">
+                    Close / बंद करें
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Script -->
     <script src="script.js"></script>
 </body>
