@@ -71,6 +71,7 @@ function initiatePayment(e) {
     // Basic Validation
     const mobile = document.getElementById('booking-mobile').value;
     const amount = document.getElementById('booking-amount').value;
+    const totalAmount = document.getElementById('booking-total-amount').value;
     
     if(mobile.length !== 10) {
         alert('Please enter a valid 10-digit mobile number');
@@ -82,10 +83,28 @@ function initiatePayment(e) {
         return;
     }
 
+    if(!totalAmount || Number(totalAmount) < Number(amount)) {
+        alert('Total amount must be greater than or equal to advance amount');
+        return;
+    }
+
+    // Update Payment Modal with Amount
+    const upiId = "9522552066-4@ybl";
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=${upiId}&pn=NewJantaBand&am=${amount}&cu=INR`;
+    const upiLink = `upi://pay?pa=${upiId}&pn=NewJantaBand&am=${amount}&cu=INR`;
+
+    const modalContent = document.getElementById('payment-modal-content');
+    const qrImg = modalContent.querySelector('img');
+    const upiLinks = modalContent.querySelectorAll('a');
+    
+    qrImg.src = qrUrl;
+    upiLinks.forEach(link => link.href = upiLink);
+    
+    // Show amount in modal title or description if needed (optional)
+    // modalContent.querySelector('h3').textContent = `Pay ₹${amount}`;
+
     // Show Payment Modal
     const modal = document.getElementById('payment-modal');
-    const modalContent = document.getElementById('payment-modal-content');
-    
     modal.classList.remove('hidden');
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
@@ -107,16 +126,44 @@ function closePaymentModal() {
 }
 
 async function confirmPayment() {
-    // 1. Generate Reference Number
-    const timestamp = Date.now().toString().slice(-6);
+    // 1. Generate Transaction Details
+    const timestamp = Date.now();
+    const dateObj = new Date(timestamp);
+    const dateStr = dateObj.toLocaleDateString('en-IN');
+    const timeStr = dateObj.toLocaleTimeString('en-IN');
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    const refNumber = `REF-${timestamp}${random}`;
     
-    // 2. Set Reference Number in Form
+    const refNumber = `INV-${timestamp.toString().slice(-6)}${random}`;
+    const txnId = `TXN${timestamp}${random}`; // Simulated Transaction ID
+
+    // Get Form Values
+    const name = document.getElementById('booking-name').value;
+    const mobile = document.getElementById('booking-mobile').value;
+    const eventDate = document.getElementById('booking-date').value;
+    const location = document.getElementById('booking-location').value;
+    const pkg = document.getElementById('booking-package').value;
+    const advanceAmount = document.getElementById('booking-amount').value;
+    const totalAmount = document.getElementById('booking-total-amount').value;
+    const remainingAmount = Number(totalAmount) - Number(advanceAmount);
+
+    // 2. Set Hidden Form Fields
     document.getElementById('booking-reference').value = refNumber;
-    document.getElementById('success-ref-number').textContent = refNumber;
+    document.getElementById('booking-transaction-id').value = txnId;
+    document.getElementById('booking-remaining-amount').value = remainingAmount;
+    document.getElementById('booking-payment-time').value = `${dateStr} ${timeStr}`;
     
-    // 3. Submit Form to Formspree via AJAX
+    // 3. Populate Invoice Modal
+    document.getElementById('inv-number').textContent = refNumber;
+    document.getElementById('inv-date').textContent = `${dateStr} ${timeStr}`;
+    document.getElementById('inv-txn').textContent = txnId;
+    document.getElementById('inv-name').textContent = name;
+    document.getElementById('inv-event-date').textContent = eventDate;
+    document.getElementById('inv-package').textContent = pkg || 'Custom Package';
+    document.getElementById('inv-total').textContent = `₹${totalAmount}`;
+    document.getElementById('inv-advance').textContent = `₹${advanceAmount}`;
+    document.getElementById('inv-remaining').textContent = `₹${remainingAmount}`;
+
+    // 4. Submit Form to Formspree via AJAX
     const form = document.getElementById('booking-form');
     const formData = new FormData(form);
     
@@ -130,32 +177,27 @@ async function confirmPayment() {
         });
         
         if (response.ok) {
-            // 4. Hide Payment Modal & Show Success Modal
+            // 5. Hide Payment Modal & Show Success Modal (Invoice)
             closePaymentModal();
             setTimeout(() => {
                 showSuccessModal();
                 
-                // 5. Send WhatsApp Message to Owner
-                const name = document.getElementById('booking-name').value;
-                const mobile = document.getElementById('booking-mobile').value;
-                const date = document.getElementById('booking-date').value;
-                const location = document.getElementById('booking-location').value;
-                const pkg = document.getElementById('booking-package').value;
-                const amount = document.getElementById('booking-amount').value;
-
+                // 6. Send WhatsApp Message to Owner
                 const message = encodeURIComponent(
                     `*New Booking Confirmed*\n\n` +
-                    `Ref No: ${refNumber}\n` +
+                    `Invoice No: ${refNumber}\n` +
+                    `Txn ID: ${txnId}\n` +
                     `Name: ${name}\n` +
                     `Mobile: ${mobile}\n` +
-                    `Date: ${date}\n` +
+                    `Event Date: ${eventDate}\n` +
                     `Location: ${location}\n` +
                     `Package: ${pkg || 'Not selected'}\n` +
-                    `Advance Paid: ₹${amount}\n` +
+                    `Total Amount: ₹${totalAmount}\n` +
+                    `Advance Paid: ₹${advanceAmount}\n` +
+                    `Remaining: ₹${remainingAmount}\n` +
                     `Payment Status: User marked as Paid`
                 );
                 
-                // Using the number from UPI ID or primary contact
                 const ownerPhone = "918982069314"; 
                 window.open(`https://wa.me/${ownerPhone}?text=${message}`, '_blank');
 
@@ -191,4 +233,25 @@ function closeSuccessModal() {
     setTimeout(() => {
         modal.classList.add('hidden');
     }, 300);
+}
+
+function downloadInvoice() {
+    const invoiceContent = document.getElementById('invoice-content').innerHTML;
+    const originalContent = document.body.innerHTML;
+
+    // Create a print-friendly view
+    document.body.innerHTML = `
+        <div style="padding: 40px; max-width: 800px; margin: 0 auto; font-family: sans-serif;">
+            ${invoiceContent}
+        </div>
+    `;
+    
+    window.print();
+    
+    // Restore original content
+    document.body.innerHTML = originalContent;
+    
+    // Re-attach event listeners (since we replaced body HTML)
+    // In a real app, we'd avoid replacing body. For this static site, reloading is safer to restore state
+    location.reload(); 
 }

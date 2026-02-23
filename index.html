@@ -436,12 +436,24 @@
                         </div>
 
                         <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Total Amount / कुल राशि</label>
+                            <div class="relative">
+                                <i data-lucide="indian-rupee" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                                <input type="number" id="booking-total-amount" name="total_amount" required min="1" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" placeholder="Enter total agreed amount">
+                            </div>
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">Advance Amount / अग्रिम राशि (₹1 - ₹5000)</label>
                             <div class="relative">
                                 <i data-lucide="indian-rupee" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                                 <input type="number" id="booking-amount" name="amount" required min="1" max="5000" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all" placeholder="Enter advance amount">
                             </div>
                         </div>
+
+                        <input type="hidden" id="booking-transaction-id" name="transaction_id">
+                        <input type="hidden" id="booking-remaining-amount" name="remaining_amount">
+                        <input type="hidden" id="booking-payment-time" name="payment_time">
 
                         <button type="submit" class="w-full bg-amber-500 text-slate-900 py-4 rounded-lg font-bold hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 mt-4">
                             <i data-lucide="credit-card" class="w-5 h-5"></i>
@@ -654,20 +666,71 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="success-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="success-modal-content">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="check" class="w-8 h-8 text-green-600"></i>
+    <!-- Success Modal (Invoice) -->
+    <div id="success-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full mx-auto transform transition-all scale-95 opacity-0 my-8" id="success-modal-content">
+            <div id="invoice-content" class="bg-white">
+                <!-- Header -->
+                <div class="text-center border-b border-slate-200 pb-6 mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="check" class="w-8 h-8 text-green-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900">Booking Confirmed!</h3>
+                    <p class="text-slate-500">New Janta Band - Payment Receipt</p>
                 </div>
-                <h3 class="text-2xl font-bold text-slate-900 mb-2">Booking Successful!</h3>
-                <p class="text-slate-600 mb-2">Thank you! We have received your request.</p>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-6">
-                    <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Reference Number</p>
-                    <p class="font-mono text-lg font-bold text-slate-800" id="success-ref-number">REF-123456</p>
+
+                <!-- Invoice Details -->
+                <div class="space-y-4 mb-6 text-sm">
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-500">Invoice No:</span>
+                        <span class="font-mono font-bold text-slate-900" id="inv-number"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-500">Date & Time:</span>
+                        <span class="font-medium text-slate-900" id="inv-date"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-500">Transaction ID:</span>
+                        <span class="font-mono font-medium text-slate-900" id="inv-txn"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-500">Customer Name:</span>
+                        <span class="font-medium text-slate-900" id="inv-name"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-500">Event Date:</span>
+                        <span class="font-medium text-slate-900" id="inv-event-date"></span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span class="text-slate-500">Package:</span>
+                        <span class="font-medium text-slate-900" id="inv-package"></span>
+                    </div>
+                    
+                    <!-- Financials -->
+                    <div class="bg-slate-50 p-4 rounded-lg space-y-2 mt-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-600">Total Amount:</span>
+                            <span class="font-bold text-slate-900" id="inv-total"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-green-600">
+                            <span>Advance Paid:</span>
+                            <span class="font-bold" id="inv-advance"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-amber-600 pt-2 border-t border-slate-200 mt-2">
+                            <span>Remaining Balance:</span>
+                            <span class="font-bold" id="inv-remaining"></span>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="closeSuccessModal()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20">
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-3">
+                <button onclick="downloadInvoice()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-800/20 flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    Download Invoice / रसीद डाउनलोड करें
+                </button>
+                <button onclick="closeSuccessModal()" class="w-full bg-white text-slate-700 border border-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all">
                     Close / बंद करें
                 </button>
             </div>
